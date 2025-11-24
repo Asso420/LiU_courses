@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <link href="client.css" type="text/css" rel="stylesheet">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+      <script src="client.js" type="text/javascript"></script>
+      <script type="text/view" id="welcomeview">
+        		<div id="welcome_outer_div">
+            <div id="welcome_pic" class="welcome_inner_div">
+                <img src="wimage.png" alt="Picture of twidder.">
+            </div>
+            <div class="welcome_inner_div">
+                <form id="login_form" onsubmit="login(this); return false;">
+
+                  <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                  </div>
+
+                  <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                  </div>
+                  
+                  <div id="submit_div">
+                    <input type="submit" value="login">
+                  </div>
+                </form> 
+
+                <form id="sign_up_form" onsubmit="sign_up(this); return false;">
+                  
+                  <div class="header">
+                  </div>
+
+                  <div>
+                    <label for="fname">First name:</label>
+                    <input type="text" id="fname" name="fname" required>
+                  </div>
+
+                  <div>
+                    <label for="lname">Family name:</label>
+                    <input type="text" id="lname" name="lname" required>
+                  </div>
+
+                  <div>
+                    <label for="gender">Gender:</label>
+                    <select name="gender" id="gender" required>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label for="country">Country:</label>
+                    <input type="text" id="country" name="country" required>
+                  </div>
+
+                  <div>
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city" required>
+                  </div>
+
+                  <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                  </div>
+
+                  <div>
+                    <label for="password">Password:</label>
+                    <input type="text" id="password" name="password" required>
+                  </div>
+
+                  <div>
+                    <label for="password_check">Repeat PWD:</label>
+                    <input type="text" id="password_check" name="password_check" required>
+                  </div>
+
+                  <div id="singUp_submit_div">
+                    <input type="submit" value="signup">
+                  </div>
+
+                </form> 
+            </div>
+        </div>
+        <div id="welcome_forms_errors"></div>
+      </script>
+      <script type="text/view" id="profileview">
+        <div class="tab_style" id="header_tabs">
+          <div class="h_tab" id="home_tab"><button onclick="set_tab('home')">Home</button></div>
+          <div class="h_tab" id="browse_tab"><button onclick="set_tab('browse')">Browse</button></div>
+          <div class="h_tab" id="account_tab"><button onclick="set_tab('account')">Account</button></div>
+        </div>
+        <div id="tab_views">
+          <div class="tab_style" id="home_view">
+            <div id="personal_info">
+            
+            </div>
+            <div id="home_message_wall"></div>
+            <div id="refresh_home_div"><button onclick="refresh_home_wall()">refresh</button></div>
+            
+            <div id="home_post_message">
+              <form id="post_to_home" onsubmit="post_to_self(this); return false;">
+                <p><label for="msg">Write message</label></p>
+                <textarea id="msg" name="msg" rows="4" cols="50"></textarea><br>
+                <input type="submit" value="post">
+              </form>
+              <div id="home_error_msg"></div>
+            </div>
+          </div>
+          
+          <div class="tab_style" id="browse_view">
+            <form id="search_user_form" onsubmit="search_user(this); return false;">
+              <label for="email">Email:</label>
+              <input type="email" id="email" name="email" required><br>
+              <input type="submit" value="Find user">
+            </form>
+
+            <div id="user_info"></div>
+            <div id="user_message_wall"></div>
+            
+            <div id="refresh_user_div"><button onclick="refresh_user_wall()">refresh</button></div>
+            
+            <div id="user_post_message">
+              <form id="post_to_user" onsubmit="post_to_user(this); return false;">
+                <p><label for="user_msg">Write message</label></p>
+                <textarea id="user_msg" name="user_msg" rows="4" cols="50"></textarea><br>
+                <input type="submit" value="post">
+              </form>
+              <div id="browse_error_msg"></div>
+            </div>
+          </div>
+
+          <div class="tab_style" id="account_view">
+            <form id="change_password" onsubmit="change_password(this); return false;">
+              <label for="old_password">Old Password:</label>
+              <input type="text" id="old_password" name="old_password" required><br>
+              <label for="new_password1">New Password:</label>
+              <input type="text" id="new_password1" name="new_password1" required><br>
+              <label for="new_password2">New Password:</label>
+              <input type="text" id="new_password2" name="new_password2" required><br>
+              <input type="submit" value="Change password">
+            </form>
+            <div id="acc_sign_out"><button onclick="sign_out()">Sign out</button></div>
+            <div id="acc_error_msg"></div>
+          </div>
+          </div>
+        </div>
+
+      </script>
+    </head>
+    <body>
+      <div id="current_view"></div>
+    </body>
+</html>

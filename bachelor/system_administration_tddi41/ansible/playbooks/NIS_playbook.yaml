@@ -1,0 +1,131 @@
+---
+- name: configuration for NIS server
+  hosts: server
+  tasks:
+    - name: Install nis
+      package:
+        name: nis
+        state: present
+
+    - name: Create defaultdomain file
+      file:
+        path: /etc/defaultdomain
+        state: touch  # Ensure the file exists
+
+    - name: Write content to defaultdomain file
+      copy:
+        content: "nis.example.com"  # Content to write into the file
+        dest: /etc/defaultdomain
+
+    - name: Set domain name using domainname command
+      command: domainname nis.example.com
+
+    - name: Restart rpcbind service
+      service:
+        name: rpcbind
+        state: started
+        enabled: yes
+
+    - name: Restart ypserv service
+      service:
+        name: ypserv
+        state: started
+        enabled: yes
+
+    - name: modify /etc/default/nis
+      copy:
+        src: /etc/ansible/template/lab7/etc_default_nis_template.conf.j2
+        dest: /etc/default/nis
+        owner: root
+        group: root
+        mode: '0777'
+
+    - name: modify /etc/nsswitch
+      copy:
+        src: /etc/ansible/template/lab7/etc_nsswitch_template.conf.j2
+        dest: /etc/nsswitch.conf
+        owner: root
+        group: root
+        mode: '0777' 
+
+    - name: modify /etc/ypserv.securenets
+      copy:
+        src: /etc/ansible/template/lab7/etc_ypserv_securenets_template.conf.j2
+        dest: /etc/ypserv.securenets
+        owner: root
+        group: root
+        mode: '0777'
+    
+    - name: modify /etc/yp.conf
+      copy:
+        src: /etc/ansible/template/lab7/server_yp_conf_template.conf.j2
+        dest: /etc/yp.conf
+        owner: root
+        group: root
+        mode: '0777'
+      notify: restart ypserv
+      
+    - name: Makefile
+      command: make -C /var/yp
+      changed_when: true
+
+  handlers:
+    - name: restart ypserv
+      service:
+        name: ypserv
+        state: restarted
+        enabled: yes
+
+
+
+- name: configuration for NIS client
+  hosts: clients
+  tasks:
+    - name: Install nis
+      package:
+        name: nis
+        state: present
+
+    - name: Create defaultdomain file
+      file:
+        path: /etc/defaultdomain
+        state: touch  # Ensure the file exists
+
+    - name: Write content to defaultdomain file
+      copy:
+        content: "nis.example.com"  # Content to write into the file
+        dest: /etc/defaultdomain
+
+    - name: Set domain name using domainname command
+      command: domainname nis.example.com
+
+    - name: modify /etc/default/nis
+      copy:
+        src: /etc/ansible/template/lab7/client_etc_default_nis_template.conf.j2
+        dest: /etc/default/nis
+        owner: root
+        group: root
+        mode: '0777'
+
+    - name: modify /etc/nsswitch
+      copy:
+        src: /etc/ansible/template/lab7/etc_nsswitch_template.conf.j2
+        dest: /etc/nsswitch.conf
+        owner: root
+        group: root
+        mode: '0777'
+
+    - name: modify /etc/yp.conf
+      copy:
+        src: /etc/ansible/template/lab7/client_yp_conf_template.conf.j2
+        dest: /etc/yp.conf
+        owner: root
+        group: root
+        mode: '0777'
+
+    - name: Restart ypbind service
+      service:
+        name: ypbind
+        state: started
+        enabled: yes
+    

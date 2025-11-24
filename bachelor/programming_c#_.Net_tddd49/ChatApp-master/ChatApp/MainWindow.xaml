@@ -1,0 +1,54 @@
+﻿<Window x:Class="ChatApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ChatApp"
+        mc:Ignorable="d"
+        Title="ChatApp" Height="613" Width="800" Padding="20">
+
+    <Grid Background="LightGreen">
+
+        <!-- Application Title -->
+        <Label Content="MyChatApp" HorizontalAlignment="Center" VerticalAlignment="Top" 
+               FontSize="28" FontWeight="Bold" FontFamily="Bahnschrift Light" Margin="0,10"/>
+
+        <!-- Status Text -->
+        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" TextWrapping="Wrap" 
+                   Text="{Binding Path=TopText, UpdateSourceTrigger=PropertyChanged}" 
+                   FontSize="20" FontWeight="Bold" FontStyle="Italic" 
+                   Margin="0,70,0,0" Width="auto" MaxWidth="600"/>
+
+        <!-- User Input Fields -->
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="150,150,150,0">
+
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Style>
+            </StackPanel.Resources>
+
+            <TextBlock Text="ENTER NICKNAME:"/>
+            <TextBox Text="{Binding Path=UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     Height="36" FontSize="22" Margin="0,5"/>
+
+            <TextBlock Text="ENTER PORTNUMBER:"/>
+            <TextBox Text="{Binding Path=PortNum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     Height="36" FontSize="22" Margin="0,20,0,5"/>
+
+            <TextBlock Text="ENTER IP-ADDRESS:"/>
+            <TextBox Text="{Binding Path=IpAdd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     Height="35" FontSize="22" Margin="0,5"/>
+        </StackPanel>
+
+        <!-- Buttons -->
+        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,50">
+            <Button Content="START SERVER" Height="48" Width="340" 
+                    Command="{Binding Path=StartServer}" FontSize="20" FontWeight="Bold" Margin="0,10"/>
+            <Button Content="START CLIENT" Height="48" Width="340" 
+                    Command="{Binding Path=StartClient}" FontSize="20" FontWeight="Bold"/>
+        </StackPanel>
+
+    </Grid>
+</Window>

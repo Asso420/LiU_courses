@@ -1,0 +1,9 @@
+make[1]: *** [../../tests/Make.tests:105: tests/klaar/pfs.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/read-stdout.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/write-normal.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/read-bad-fd.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/read-normal.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/read-boundary.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/read-bad-ptr.output] Interrupt
+make[1]: *** [../../tests/Make.tests:105: tests/userprog/read-zero.output] Interrupt
+make: *** [../Makefile.kernel:10: check] Interrupt

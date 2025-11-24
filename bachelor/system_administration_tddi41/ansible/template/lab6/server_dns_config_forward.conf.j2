@@ -1,0 +1,16 @@
+$TTL 1h
+@ IN SOA ns1.gruppnamn.example.com. root.gruppnamn.example.com. (
+					2023111301 ;SERIAL
+					2h ; Refresh
+					1h ; Retry
+					1w ; expire
+					1h ; Minimum
+)
+@		IN NS		ns1.gruppnamn.example.com.
+gruppnamn.example.com.		IN A 10.0.0.2
+ns1		IN A		10.0.0.2
+client-1	IN A		10.0.0.3
+client-2	IN A		10.0.0.4
+gw		IN A		10.0.0.1
+server		IN CNAME	gruppnamn.example.com.
+

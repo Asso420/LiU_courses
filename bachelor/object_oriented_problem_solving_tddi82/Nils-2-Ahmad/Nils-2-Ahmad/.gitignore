@@ -1,0 +1,4 @@
+#Ignoring .o and .out files
+*.o
+*.out
+*.json

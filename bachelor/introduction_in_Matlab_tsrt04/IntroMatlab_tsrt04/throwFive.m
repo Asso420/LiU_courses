@@ -1,0 +1,79 @@
+
+function throwFive()
+    results = RollDice(5)
+    counts = zeros(1,6);
+    for v = 1:6   
+        counts(v) = sum(results == v);
+    end
+
+    resultSorted = sort(results);
+    disp(['result vector:' mat2str(resultSorted)]);
+    maxCount = max(counts);
+    disp(['Max Count:' mat2str(maxCount)]);
+    % Find all values with the maximum count
+    mostCommon = find(counts == maxCount);  
+    disp(['Antal: ' num2str(length(mostCommon))]);
+    disp(['mostCommon vector:' mat2str(mostCommon)]);
+
+    if maxCount > 1 % Use '==' for comparison instead of '='
+        random = randi(numel(mostCommon));
+        disp(['random:' mat2str(random)]);
+        idex = mostCommon(random);
+
+        % Fill returnVector with the most common elements
+        returnVector = repmat(idex, 1, maxCount);
+
+        % Find the rest of the elements and add them to returnVector
+        if (length(mostCommon)) == 1
+            rest = setdiff(results, idex);
+            disp('rest:');  disp(rest);
+        else
+            % Find the rest of the elements
+            rest = [];
+            for i = 1:(5 - maxCount)
+                % Generate a random integer between 1 and 6
+                randomInt = randi(6);
+                % Check if it's the same as the mostCommon element
+               while randomInt == idex 
+                    randomInt = randi(6);
+               end 
+                rest = [rest randomInt];
+            end 
+            disp(['random rest: ' mat2str(rest)]);
+        end
+
+        restCount = min(length(rest), 5 - maxCount); % Ensure not to exceed the total count of 5
+        disp('restcount:');  disp(restCount);
+
+        returnVector = [returnVector rest(1:restCount)];
+        disp(['The mostCommon: ' mat2str(idex)]);
+    else 
+        returnVector = resultSorted;
+    end
+
+    disp(['The outcome: ' mat2str(counts)]);
+    disp(['Assignment 2.4: ' mat2str(returnVector)]);
+
+    function throwCount = throwFive(debug)
+        current = [];
+        %First throw, so we start at 0 throws and 5 dies.
+        throwCount = 0;
+        diesLeft = 5;
+        while diesLeft > 0
+            %This will append the "old" saved dies with the new throw.
+            data = [simulateThrowDie(diesLeft, debug) current];
+            if(debug)
+                fmt = ['Currently have: ' repmat(' %1.0f ',1, numel(data)) '\n'];
+                fprintf(fmt, data)
+            end
+            %Save the best dies to the next iteration
+            current = findDie(data, debug);
+            throwCount = throwCount + 1;
+            %If we have 5 saved, i.e we have 5 of a kind then this will be zero
+            %and the loop will exited after this
+            diesLeft = 5 - length(current);  
+        end
+    end
+    disp(['Assignment 2.5: ' mat2str()]);
+end
+

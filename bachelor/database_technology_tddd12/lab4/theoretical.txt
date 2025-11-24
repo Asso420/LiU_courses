@@ -1,0 +1,159 @@
+/*
+Lab 2, Report
+Mohammad Rajabi (mohra735) 
+Ahmad Soltani (ahamso698) 
+Morteza Miri (mormi475)
+
+Last editted: 2024-05-16
+*/
+
+
+8. Answer the following theoretical questions:
+a) How can you protect the credit card information in the database from hackers?
+ANSWER: 
+    - Using encryption methods to safely store the credit card information in data base.
+    - Not storing the credit card information at all.
+    - Inforce strict access control to make sure that only authourised parties can access the data.
+
+b) Give three advantages of using stored procedures in the database 
+(and therebyexecute them on the server) instead of writing the same functions in 
+the frontend of the system (in for example java-script on a web-page)?
+ANSWER: 
+    - Minimizes duplication of effort when multiple applications require a database program.
+    - Lowers data transfer and communication costs in a client-server environment.
+    - Enables the enforcement of complex constraints.
+
+
+9. Open two MySQL sessions. We call one of them A and the other one B. Write
+START TRANSACTION; in both terminals.
+a) In session A, add a new reservation.
+b) Is this reservation visible in session B? Why? Why not?
+
+    - ANSWER:
+            - No, this is because of the atomicity property of a transaction which means
+            - a transaction is not complete until it is committed. In this case the modification
+            - which takes place in session A is not cimmitted and therefor is not observed in 
+            - session B.
+
+c) What happens if you try to modify the reservation from A in B? Explain what
+happens and why this happens and how this relates to the concept of isolation
+of transactions.
+
+    - ANSWER:
+        - In order to modify the reservation made in session A from session B the transactions
+        - must have been completed in both the sessions. If the modification is done before the 
+        - commit command the reservation table will be uppdated according to the latest committed
+        - session. This is due to isolation property of transations, which means that even though 
+        - two transations are happening at the same time it should appear that the execution is
+        - in isolation.
+
+10. Is your BryanAir implementation safe when handling multiple concurrent
+transactions? Let two customers try to simultaneously book more seats than what are
+available on a flight and see what happens. This is tested by executing the testscripts
+available on the course-page using two different MySQL sessions. Note that you
+should not use explicit transaction control unless this is your solution on 10c.
+
+a) Did overbooking occur when the scripts were executed? If so, why? If not,
+why not?
+
+- ANSWER:
+    - No overbooking occured. The first session successfully payed for the
+    - reservation and since these booked seats were subtracted from the available
+    - seats on the flight.
+    - In this case the second session tries to add a new reservation with 21
+    - passengers while only 19 seats are available. This means that only 19 
+    - passengers can book a seat on the flight. But since all of these 21 passengers
+    - have the same reservation number the "addPayment" procedure tries to book 21 seats
+    - which is simply not possible and the reservation is deleted and no overbooking
+    - takes place.  
+
+b) Can an overbooking theoretically occur? If an overbooking is possible, in what
+order must the lines of code in your procedures/functions be executed.
+
+- ANSWER:
+    - Yes, theoretically this is possible. An overbooking can happen if the second
+    - sesion passes the if statement in "addPayment" where the nummber of free seats are 
+    - checked before the first session had the time to uppdate the number_of_free_seats in
+    - flight table. 
+
+    ELSEIF (number_of_passengers_on_res > calculateFreeSeats(flight_number)) THEN
+      -- Delete all the reservations due to overbooking.
+      DELETE FROM passenger_reservation 
+      WHERE (passenger_reservation.res_num = reservation_nr);
+      DELETE FROM is_contact_for
+      WHERE (is_contact_for.res_num = reservation_nr);
+      DELETE FROM reservation
+      WHERE (reservation.res_num = reservation_nr);
+      SELECT "There is not enough seats in the chosen flight, deleting resevation" as "Message";
+   ELSE
+
+    - The first session must be here when the second session eneters the ELSEIF statement above.
+
+      IF EXISTS (SELECT 1 FROM credit_card WHERE credit_card.card_num = credit_card_number) THEN
+         INSERT INTO booking(res_num, card_num, total_price)
+         VALUES (reservation_nr, credit_card_number, total_price_to_pay);
+         UPDATE flight
+        SET num_of_free_seats = num_of_free_seats - number_of_passengers_on_res
+        WHERE flight.flight_num = flight_number;
+      ELSE
+         INSERT INTO credit_card(card_num, card_holder)
+         VALUES(credit_card_number, cardholder_name);
+         INSERT INTO booking(res_num, card_num, total_price)
+         VALUES (reservation_nr, credit_card_number, total_price_to_pay);
+         UPDATE flight
+        SET num_of_free_seats = num_of_free_seats - number_of_passengers_on_res
+        WHERE flight.flight_num = flight_number;
+      END IF;
+
+c) Try to make the theoretical case occur in reality by simulating that multiple
+sessions call the procedure at the same time. To specify the order in which the
+lines of code are executed use the MySQL query SELECT sleep(5); which
+makes the session sleep for 5 seconds. Note that it is not always possible to
+make the theoretical case occur, if not, motivate why.
+
+- ANSWER:
+    - As mentioned in part (b), in order to have an overbooking the execution of 
+    - "addPayment" must be paused in a specific line. This means the processor 
+    - must be stopped which will not happen if the developer does not intetionally
+    - code it in the program.
+    
+d) Modify the testscripts so that overbookings are no longer possible using
+(some of) the commands START TRANSACTION, COMMIT, LOCK TABLES, UNLOCK
+TABLES, ROLLBACK, SAVEPOINT, and SELECT…FOR UPDATE. Motivate why your
+solution solves the issue, and test that this also is the case using the sleep
+implemented in 10c. Note that it is not ok that one of the sessions ends up in a
+deadlock scenario. Also, try to hold locks on the common resources for as
+short time as possible to allow multiple sessions to be active at the same time.
+Note that depending on how you have implemented the project it might be very
+hard to block the overbooking due to how transactions and locks are
+implemented in MySQL. If you have a good idea of how it should be solved but
+are stuck on getting the queries right, talk to your lab-assistant and he or she
+might help you get it right or allow you to hand in the exercise with
+pseudocode and a theoretical explanation.
+
+- ANSWER:
+    - To ensure that no overbooking can occur, tables are locked with appropriate
+    - lock type. The following code is needed in test script to mitigate overbooking.
+
+
+    LOCK TABLE airport READ, yearly_factor READ, route READ, week_day READ,
+    weekly_schedule READ, flight WRITE, credit_card WRITE, reservation WRITE,
+    booking WRITE, passenger READ, is_contact_for WRITE, passenger_reservation
+    WRITE, payed_reservation WRITE;  
+    CALL addPayment (@a, "Sauron",7878787878);
+    UNLOCK TABLES;
+
+
+11. Identify one case where a secondary index would be useful. Design the index,
+    describe and motivate your design. (Do not implement this.)
+
+    - ANSWER:
+        - A secondary index would be useful in flight relation
+        - where each weekly_schedule is repeated 52 times. In order to optimize 
+        - the sql search in flight table, we could use week_id as a secondary index.
+        - This would decrease the time it takes to find a flight on a specific weekly_schedule.
+
+        - The Design: 
+        
+        create index quick_search
+        on flight(week_id);

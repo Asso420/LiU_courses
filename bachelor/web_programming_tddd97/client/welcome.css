@@ -1,0 +1,31 @@
+html {width: 100%;}
+body {width: 150%; }
+
+#welcome_outer_div{
+  width: 600px;
+  height: 400px;
+  text-align: right;
+  align-self: center;
+  background-color:aqua;
+  margin:100px;
+  display: flex;
+}
+
+
+.welcome_inner_div{
+    margin:auto;
+    vertical-align: top;
+    height: 400px;
+    font-size: small;
+}
+#welcome_pic{
+}
+#login_form{
+  margin: 5px;
+  width: 250px;
+}
+#sign_up_form{
+  margin: 5px;
+  background-color: blue;
+  width: 250px;
+}

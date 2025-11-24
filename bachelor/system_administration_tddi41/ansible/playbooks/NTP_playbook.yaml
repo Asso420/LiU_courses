@@ -1,0 +1,50 @@
+---
+- name: install ntp on server
+  hosts: router
+  tasks:
+    - name: Install NTP package
+      package:
+        name: ntp
+        state: present
+
+    - name: Transfer NTP configuration file ntp server
+      copy:
+        src: /etc/ansible/template/lab8/ntp_config_template.conf.j2  
+        dest: /etc/ntp.conf
+        owner: root
+        group: root
+        mode: '0777'  
+
+    - name: Ensure NTP service is enabled and started
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+
+- name: install ntp on clients
+  hosts: clients
+  tasks:
+    - name: Install NTP package  
+      package:
+        name: ntp
+        state: present
+        
+    - name: Install NTP_stat package  
+      package:
+        name: ntpstat
+        state: present
+
+    - name: Transfer NTP configuration file clients  
+      copy:
+        src: /etc/ansible/template/lab8/client_ntp_config_template.conf.j2
+        dest: /etc/ntp.conf
+        owner: root
+        group: root
+        mode: '0777'  # Ensure the correct permissions on the destination file
+
+    - name: Ensure NTP service is enabled and started
+      service:
+        name: ntp
+        state: started
+        enabled: yes
+
