@@ -1,0 +1,138 @@
+from pyspark.sql import Row, SparkSession
+from pyspark.sql import functions as F
+
+APP_NAME = "Spark SQL Demo"
+spark = SparkSession.builder \
+    .appName(APP_NAME) \
+    .getOrCreate()
+
+sc = spark.sparkContext # create a SparkContext object to connect to the cluster
+
+# 1. Read the file as an RDD (assignment 1 and 4)
+hdfs_as_RDD_temp = sc.textFile("hdfs:///user/x_ahmso/BDA/input/temperature-readings.csv")
+hdfs_as_RDD_precip = sc.textFile("hdfs:///user/x_ahmso/BDA/input/precipitation-readings.csv")
+# 2. Parse into DataFrame Rows 
+lines = hdfs_as_RDD_temp.map(lambda line: line.split(";")) #create an RDD of lists, where each list contains the fields of a line
+line_precip = hdfs_as_RDD_precip.map(lambda line: line.split(";"))
+
+# assignment 5
+file_as_RDD_precip = sc.textFile("file:///home/x_ahmso/BDA-lab/input_data/precipitation-readings.csv")
+file_as_RDD_ostgotland = sc.textFile("file:///home/x_ahmso/BDA-lab/input_data/stations-Ostergotland.csv")
+lines_precip = file_as_RDD_precip.map(lambda line: line.split(";")) #create an RDD of lists, where each list contains the fields of a line
+lines_ostgotland = file_as_RDD_ostgotland.map(lambda line: line.split(";")) # rdd of station names in Ostergotland region, which will be used for
+
+# -----------------------assignment 1-----------------------------------------------
+# structured_RDD_temp = lines.map(lambda x: Row(year = int(x[1][0:4]), stationID = x[0], temperature = float(x[3]))) 
+# # 3. Create DataFrame and Filter Years
+ df = spark.createDataFrame(structured_RDD_temp)
+ filtered_df = df.filter((F.col('year') >= 1950) & (F.col('year') <= 2014))
+ base_df = filtered_df.alias("base")
+
+ max_temps = filtered_df.groupBy('year').agg(F.max('temperature').alias('maxValue')) 
+ max_df = max_temps.alias("max") #max_df is a DataFrame that contains the maximum temperature for each year, with columns "year" and "maxValue"
+ max_result = base_df.join(max_df, 
+                           (F.col("base.year") == F.col("max.year")) & 
+                           (F.col("base.temperature") == F.col("max.maxValue")),
+                           'inner') \
+     .select(F.col("base.year").alias("year"), F.col("base.stationID").alias("stationID"), F.col("max.maxValue").alias("value")) \
+     .dropDuplicates(["year"]) \
+     .orderBy(F.col("value"), descending=True) 
+    
+ min_temps = filtered_df.groupBy('year').agg(F.min('temperature').alias('minValue'))
+ min_df = min_temps.alias("min") #min_df is a DataFrame that contains the minimum temperature for each year, with columns "year" and "minValue"
+ min_result = base_df.join(min_df, 
+                           (F.col("base.year") == F.col("min.year")) & 
+                           (F.col("base.temperature") == F.col("min.minValue")),
+                           'inner') \
+     .select(F.col("base.year").alias("year"), F.col("base.stationID").alias("stationID"), F.col("min.minValue").alias("value")) \
+     .dropDuplicates(["year"]) \
+     .orderBy(F.col("value"), descending=True)
+
+ max_formatted = max_result.rdd.map(lambda row: f"{row.year}, {row.stationID}, {row.value}") 
+ min_formatted = min_result.rdd.map(lambda row: f"{row.year}, {row.stationID}, {row.value}") 
+
+ combined_output = max_formatted.union(min_formatted)
+ combined_output.saveAsTextFile("hdfs:///user/x_ahmso/BDA/output")
+
+
+# -----------------------assignment 2-----------------------------------------------
+parsed_data = lines.map(lambda x: Row(
+    station=x[0], 
+    year=int(x[1][0:4]), 
+    month=int(x[1][5:7]), 
+    temperature=float(x[3])
+))
+df = spark.createDataFrame(parsed_data)
+df_filtered = df.filter((F.col("year") >= 1950) & (F.col("year") <= 2014) & (F.col("temperature") > 10))
+
+count_all_df = df_filtered.groupBy("year", "month").count() \
+                          .withColumnRenamed("count", "value") \
+                          .orderBy(F.col("value").desc())
+
+count_all_df.rdd.map(lambda row: f"{row.year}, {row.month}, {row.value}") \
+                .saveAsTextFile("hdfs:///user/x_fanya/BDA/output/A2_part1")
+
+# Group by year and month, but count only unique stations (distinct readings)
+count_distinct_df = df_filtered.groupBy("year", "month") \
+                               .agg(F.countDistinct("station").alias("value")) \
+                               .orderBy(F.col("value").desc())
+
+# Format output as requested: Year, month, count
+count_distinct_df.rdd.map(lambda row: f"{row.year}, {row.month}, {row.value}") \
+                     .saveAsTextFile("hdfs:///user/x_fanya/BDA/output/A2_part2")     
+# -----------------------assignment 3-----------------------------------------------
+df_filtered = df.filter((F.col("year") >= 1960) & (F.col("year") <= 2014))
+
+# Calculate average monthly temperature for each station
+# Group by year, month, and station, then calculate the average temperature
+avg_df = df_filtered.groupBy("year", "month", "station") \
+                    .agg(F.avg("temperature").alias("avgMonthlyTemperature")) \
+                    .orderBy(F.col("avgMonthlyTemperature").desc())
+
+# Format output as requested: Year, month, station number, average monthly temperature
+avg_df.rdd.map(lambda row: f"{row.year}, {row.month}, {row.station}, {row.avgMonthlyTemperature}") \
+          .saveAsTextFile("file:///home/x_fanya/BDA-lab/BDA_demo/myoutput/A3")
+
+
+# -----------------------------------assignment 4---------------------------------------------
+structured_RDD_temp = lines.map(lambda x: Row(stationID = x[0], temperature = float(x[3])))
+df_temp = spark.createDataFrame(structured_RDD_temp)
+max_temp = df_temp.groupBy('stationID').agg(F.max('temperature').alias('maxValue'))
+
+structured_RDD_precip = line_precip.map(lambda x: Row(stationID = x[0], date = x[1], precipitation = float(x[3])))
+df_precip = spark.createDataFrame(structured_RDD_precip)
+daily_precip = df_precip.groupBy('stationID', 'date').agg(F.sum('precipitation').alias('daily_precip'))
+max_daily_precip = daily_precip.groupBy('stationID').agg(F.max('daily_precip').alias('maxDailyPrecip'))
+
+result_temp = max_temp.filter((F.col('maxValue') >= 25.0) & (F.col('maxValue') <= 30.0))
+
+result_precip = max_daily_precip.filter((F.col('maxDailyPrecip') >= 50.0) & (F.col('maxDailyPrecip') <= 200.0))
+
+final_result = result_temp.join(result_precip, "stationID", "inner") \
+    .select("stationID", "maxValue", "maxDailyPrecip") \
+    .orderBy("stationID", descending=True)
+
+final_result_formatted = final_result.rdd.map(lambda row: f"{row.stationID}, {row.maxValue}, {row.maxDailyPrecip:.1f}")
+final_result_formatted.saveAsTextFile("hdfs:///user/x_ahmso/BDA/output")
+
+# -------------------------------assignment 5-----------------------------------------
+structured_RDD_precip = lines_precip.map(lambda x: Row(stationID = x[0], year = x[1][0:4], month = x[1][5:7], precipitation = float(x[3])))
+df_precip = spark.createDataFrame(structured_RDD_precip)
+df_precip = df_precip.filter((F.col('year') >= "1993") & (F.col('year') <= "2016"))
+
+stallions_ostgotland = lines_ostgotland.map(lambda x: Row(stationID = x[0])) 
+df_ostgotland = spark.createDataFrame(stallions_ostgotland)
+
+regional_precip = df_precip.join(F.broadcast(df_ostgotland), "stationID", "inner")
+
+monthly_total_precip = regional_precip.groupBy("stationID", "year", "month").agg(F.sum("precipitation").alias("total_monthly_precip"))
+avg_monthly_precip = monthly_total_precip.groupBy("year", "month").agg(F.avg("total_monthly_precip").alias("avg_monthly_precip"))
+
+
+final_result = avg_monthly_precip.orderBy(["year", "month"], descending=[True, True])
+
+final_result_formatted = final_result.rdd.map(lambda row: f"{row.year}, {row.month}, {row.avg_monthly_precip:.1f}")
+final_result_formatted.saveAsTextFile("file:///home/x_ahmso/BDA-lab/myoutput/")
+
+
+spark.stop()
