@@ -1,0 +1,12 @@
+{
+   "1000" : {
+      "name": "John Doe",
+      "shared_secret": "2acc419b3578673a",
+      "balance": 1234
+   },
+   "2000" : {
+      "name": "Elon Musk",
+      "shared_secret": "e22f3c71effb1abf",
+      "balance": 198500000000
+   }
+}
